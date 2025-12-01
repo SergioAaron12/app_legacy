@@ -47,8 +47,10 @@ public class AuthService {
         Usuario usuario = new Usuario();
         usuario.setNombre(dto.getNombre());
         usuario.setApellido(dto.getApellido());
-        usuario.setRut(dto.getRut());
-        usuario.setDv(dto.getDv());
+        // Normalizar RUT (sin puntos ni guiones) y limpiar DV
+        String normalizedRut = dto.getRut() != null ? dto.getRut().replaceAll("[^0-9]", "") : null;
+        usuario.setRut(normalizedRut);
+        usuario.setDv(dto.getDv() != null ? dto.getDv().trim() : null);
         usuario.setEmail(dto.getEmail());
         usuario.setTelefono(dto.getTelefono());
         usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -58,6 +60,41 @@ public class AuthService {
     }
 
     public TokenDto login(LoginDto dto) {
+        // Si se envía rut, autenticamos por RUT (permite rut con o sin DV, con guión o puntos)
+        if (dto.getRut() != null && !dto.getRut().isBlank()) {
+            String raw = dto.getRut().trim();
+            String dvFromRut = null;
+            if (raw.contains("-")) {
+                String[] parts = raw.split("-", 2);
+                raw = parts[0];
+                dvFromRut = parts[1];
+            }
+            // Normalizar: eliminar puntos y espacios
+            String normalizedRut = raw.replaceAll("[^0-9]", "");
+
+            Optional<Usuario> userOpt = usuarioRepository.findByRut(normalizedRut);
+            if (userOpt.isEmpty()) {
+                throw new RuntimeException("Usuario no encontrado");
+            }
+            Usuario usuario = userOpt.get();
+
+            // Si se proporcionó DV (en dto.dv o en rut), verificar coincidencia
+            String dvProvided = dto.getDv();
+            if ((dvProvided == null || dvProvided.isBlank()) && dvFromRut != null) dvProvided = dvFromRut;
+            if (dvProvided != null && !dvProvided.isBlank()) {
+                if (!usuario.getDv().equalsIgnoreCase(dvProvided.trim())) {
+                    throw new RuntimeException("Dígito verificador incorrecto");
+                }
+            }
+
+            if (!passwordEncoder.matches(dto.getPassword(), usuario.getPassword())) {
+                throw new RuntimeException("Contraseña incorrecta");
+            }
+
+            return new TokenDto(jwtProvider.createToken(usuario));
+        }
+
+        // Por defecto autenticación por email
         Optional<Usuario> userOpt = usuarioRepository.findByEmail(dto.getEmail());
         if (userOpt.isEmpty()) {
             throw new RuntimeException("Usuario no encontrado");

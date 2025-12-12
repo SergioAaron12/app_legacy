@@ -16,10 +16,10 @@ public class Producto {
     private Double precio;
     private Integer stock;
     
-    // Guardaremos la URL o nombre del archivo de la imagen
+    // --- CAMBIO IMPORTANTE: AUMENTAMOS EL TAMAÑO ---
+    @Column(length = 5000) 
     private String imagenUrl; 
 
-    // Relación: Muchos Productos -> Una Categoría
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;

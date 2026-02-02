@@ -1,3 +1,8 @@
 legacyframeapp/
 legacyframeapp.zip
 .idea/
+# Build artefacts
+**/target/
+*.jar
+*.class
+*.log

@@ -5,3 +5,14 @@ legacyframeapp.zip
 *.jar
 *.class
 *.log
+**/build/
+**/.gradle/
+**/.idea/
+**/local.properties
+**/*.apk
+**/*.aab
+**/*.jks
+**/*.keystore
+legacyframeapp/wrapper/dists/
+legacyframeapp/native/
+legacyframeapp/app/release/

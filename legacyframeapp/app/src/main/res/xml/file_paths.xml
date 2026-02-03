@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <cache-path
+        name="my_images"
+        path="images/"/>
+    <cache-path
+        name="profile_images"
+        path="/"/>
+    <!-- Almacén persistente en almacenamiento interno -->
+    <files-path
+        name="profile_persistent"
+        path="profile_images/"/>
+</paths>
